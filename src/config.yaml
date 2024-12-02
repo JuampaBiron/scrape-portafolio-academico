@@ -1,0 +1,27 @@
+api:
+  base_url: "https://portafolio-academico.uchile.cl/api"
+  endpoints:
+    academicos: "/academicos/lista/por_reparticion"
+    publicaciones: "/academicos/publicaciones"
+    proyectos: "/academicos/proyectos"
+  auth_token: "Basic ZGlyZWN0b3JpbzphY2FkZW1pY28="
+  headers:
+    Accept: "*/*"
+    Accept-Language: "es-CL,es;q=0.8,en-US;q=0.5,en;q=0.3"
+    Connection: "keep-alive"
+    User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+
+scraping:
+  delay: 0.5  # segundos entre requests
+  max_retries: 2
+  timeout: 30
+  batch_size: 10
+
+paths:
+  data_dir: "process_data"
+  raw_data: "raw_data"
+  output_dir: "output"
+
+pagination:
+  default_limit: 200
+  max_limit: 500
