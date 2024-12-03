@@ -50,11 +50,11 @@ class PublicacionesScraper:
                     result = self.api_client._decode_response(response.text)
                     
                     # Guardar datos crudos si existe el directorio
-                    raw_data_path = Path(self.config.paths['raw_data'])
-                    if raw_data_path.exists():
-                        raw_file = raw_data_path / f'publicaciones_{id_persona}_raw.json'
-                        with open(raw_file, 'w', encoding='utf-8') as f:
-                            json.dump(result, f, indent=2, ensure_ascii=False)
+                    #raw_data_path = Path(self.config.paths['raw_data'])
+                    #if raw_data_path.exists():
+                    #    raw_file = raw_data_path / f'publicaciones_{id_persona}_raw.json'
+                    #    with open(raw_file, 'w', encoding='utf-8') as f:
+                    #        json.dump(result, f, indent=2, ensure_ascii=False)
                     
                     if 'academicos' in result and len(result['academicos']) > 0:
                         return result['academicos'][0].get('publicaciones', [])
@@ -73,32 +73,20 @@ class PublicacionesScraper:
                 
         return []
 
-    def get_all_ids(self) -> List[int]:
-        """Obtiene todos los IDs de académicos del archivo JSON"""
-        json_path = Path(self.config.paths['data_dir']) / "academicos_raw.json"
-        
-        try:
-            with open(json_path, 'r', encoding='utf-8') as archivo:
-                datos = json.load(archivo)
-                return [
-                    academico['id_persona'] 
-                    for academico in datos.get("academicos", [])[0:5]
-                    if academico.get("id_persona")
-                ]
-        except Exception as e:
-            self.logger.error(f"Error leyendo archivo de académicos: {str(e)}")
-            return []
-
     def build_publicaciones_file(self) -> bool:
         """Construye un archivo CSV con todas las publicaciones"""
         try:
             # Crear directorios necesarios
             Path(self.config.paths['raw_data']).mkdir(exist_ok=True)
             Path(self.config.paths['data_dir']).mkdir(exist_ok=True)
+            json_path = Path(self.config.paths['data_dir']) / "academicos_raw.json"
             
+            # Corregido: Abrir el archivo JSON correctamente
+            with open(json_path, 'r', encoding='utf-8') as file:
+                academicos_list = json.load(file).get("academicos")[0:5]
             # Obtener lista de IDs
-            id_list = self.get_all_ids()
-            total_ids = len(id_list)
+
+            total_ids = len(academicos_list)
             self.logger.info(f"Procesando publicaciones para {total_ids} académicos...")
             
             output_file = Path(self.config.paths['data_dir']) / 'todas_las_publicaciones.csv'
@@ -107,7 +95,7 @@ class PublicacionesScraper:
             with open(output_file, 'w', newline='', encoding='utf-8') as f:
                 writer = csv.writer(f)
                 writer.writerow([
-                    'ID Académico', 'Autores', 'Título', 'Año',
+                    'ID Academico', 'Nombre Academico', 'Autores', 'Título', 'Año',
                     'Revista', 'Tipo', 'Link', 'DOI'
                 ])
                 
@@ -115,8 +103,10 @@ class PublicacionesScraper:
                 total_publicaciones = 0
                 academicos_procesados = 0
                 
-                for i, id_academico in enumerate(id_list, 1):
-                    self.logger.info(f"Procesando académico {i}/{total_ids} (ID: {id_academico})")
+                for i, json_academico in enumerate(academicos_list, 1):
+                    id_academico = json_academico.get("id_persona")
+                    nombre_academico = json_academico.get("nombre_completo")
+                    self.logger.info(f"Procesando académico {i}/{total_ids} (Nombre: {nombre_academico})")
                     
                     publicaciones = self.get_publicaciones(id_academico)
                     # Consideramos exitoso el procesamiento incluso si no hay publicaciones
@@ -126,6 +116,7 @@ class PublicacionesScraper:
                     for pub in publicaciones:
                         writer.writerow([
                             id_academico,
+                            nombre_academico,
                             pub.get('Autores', ''),
                             pub.get('titulo_publicacion', ''),
                             pub.get('ano', ''),

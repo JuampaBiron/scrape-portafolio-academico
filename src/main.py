@@ -4,12 +4,15 @@ from pathlib import Path
 from config import Config
 from get_profesors import AcademicosScraper
 from get_publicaciones import PublicacionesScraper
+from get_projects import ProyectosScraper
+from upload_database import DataLoader
 
 class ScrapingState(Enum):
     """Estados del proceso de scraping"""
     PROFESORES = auto()
     PUBLICACIONES = auto()
-    PROFESORES_2 = auto()
+    PROYECTOS = auto()
+    UPLOAD_DATABASE = auto()
 
 class PortafolioScraper:
     def __init__(self, reparticion: int):
@@ -20,6 +23,9 @@ class PortafolioScraper:
         # Inicializar scrapers
         self.academicos_scraper = AcademicosScraper()
         self.publicaciones_scraper = PublicacionesScraper()
+        self.project_scraper = ProyectosScraper()
+        self.data_uploader = DataLoader()
+
 
     def _setup_logger(self) -> logging.Logger:
         logger = logging.getLogger('portafolio_scraper')
@@ -40,9 +46,19 @@ class PortafolioScraper:
 
     def _scrape_publicaciones(self) -> bool:
         """Obtiene las publicaciones"""
-        self.logger.info("Obteniendo publicaciones")
+        self.logger.info("*******Obteniendo publicaciones*******")
         return self.publicaciones_scraper.build_publicaciones_file()
+    
+    def _scrape_proyectos(self) -> bool:
+        """Obtiene los proyectos"""
+        self.logger.info("*******Obteniendo proyectos*******")
+        return self.project_scraper.build_proyectos_file()
 
+    def _upload_data(self) -> bool:
+        """Carga datos a la base postgresql"""
+        self.logger.info("*******Cargando datos a la base de datos*******")
+        return self.data_uploader.upload_data()
+    
     def run(self) -> None:
         """Ejecuta el proceso completo de scraping"""
         # Crear directorios necesarios
@@ -53,7 +69,8 @@ class PortafolioScraper:
         state_processors = {
             ScrapingState.PROFESORES: self._scrape_profesores,
             ScrapingState.PUBLICACIONES: self._scrape_publicaciones,
-            ScrapingState.PROFESORES_2: self._scrape_profesores,
+            ScrapingState.PROYECTOS: self._scrape_proyectos,
+            ScrapingState.UPLOAD_DATABASE:self._upload_data,
         }
 
         # Ejecutar cada proceso en orden

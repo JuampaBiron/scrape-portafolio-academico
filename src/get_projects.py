@@ -138,14 +138,13 @@ class ProyectosScraper:
                 for i, json_academico in enumerate(academicos_list, 1):
                     id_academico = json_academico.get("id_persona")
                     nombre_academico = json_academico.get("nombre_completo")
-                    self.logger.info(f"Procesando académico {i}/{total_ids} (nombre: {nombre_academico})")
+                    self.logger.info(f"Procesando académico {i}/{total_ids} (Nombre: {nombre_academico})")
                     
                     try:
                         proyectos = self.get_proyectos(id_academico)
                         academicos_procesados += 1
                         
                         if proyectos:  # Solo escribir si hay proyectos
-                            print(len(proyectos))
                             for proyecto in proyectos:
                                 writer.writerow([
                                     id_academico,
