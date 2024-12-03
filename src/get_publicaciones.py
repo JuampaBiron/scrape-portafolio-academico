@@ -83,7 +83,7 @@ class PublicacionesScraper:
             
             # Corregido: Abrir el archivo JSON correctamente
             with open(json_path, 'r', encoding='utf-8') as file:
-                academicos_list = json.load(file).get("academicos")[0:5]
+                academicos_list = json.load(file).get("academicos")
             # Obtener lista de IDs
 
             total_ids = len(academicos_list)

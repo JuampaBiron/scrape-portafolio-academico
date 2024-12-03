@@ -111,7 +111,7 @@ class ProyectosScraper:
             
             # Corregido: Abrir el archivo JSON correctamente
             with open(json_path, 'r', encoding='utf-8') as file:
-                academicos_list = json.load(file).get("academicos")[0:5]
+                academicos_list = json.load(file).get("academicos")
 
             if not academicos_list:
                 self.logger.error("No se encontraron académicos en el archivo JSON")
