@@ -4,6 +4,8 @@ api:
     academicos: "/academicos/lista/por_reparticion"
     publicaciones: "/academicos/publicaciones"
     proyectos: "/academicos/proyectos"
+    unidades: "/academicos/lista/unidades"
+    tesis: "/academicos/tesis"
   auth_token: "Basic ZGlyZWN0b3JpbzphY2FkZW1pY28="
   headers:
     Accept: "*/*"
