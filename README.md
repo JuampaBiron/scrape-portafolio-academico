@@ -1,14 +1,14 @@
 # Portafolio Académico Scraper
-Este proyecto es un scraper para el Portafolio Académico de la Universidad de Chile, diseñado para recopilar información sobre académicos, sus publicaciones, proyectos y tesis.
+Este proyecto es un scraper para el Portafolio Académico de la Universidad de Chile, diseñado para recopilar información sobre académicos, sus publicaciones, proyectos y tesis. Un desafío significativo en su desarrollo fue la decodificación de las respuestas del servidor, ya que estas venían codificadas en un formato específico. Para solucionar esto, se desarrolló el módulo api_client.py, que se encarga de decodificar automáticamente las respuestas de la API.
 ## Características
 
-  Extracción de datos de académicos por repartición
-  Recopilación de publicaciones académicas
-  Obtención de información sobre proyectos de investigación
-  Recopilación de tesis dirigidas
-  Sistema de reintentos automáticos en caso de fallos
-  Manejo de rate limiting y delays
-  Guardado de datos en formatos JSON y CSV
+  - Extracción de datos de académicos por repartición
+  - Recopilación de publicaciones académicas
+  - Obtención de información sobre proyectos de investigación
+  - Recopilación de tesis dirigidas
+  - Sistema de reintentos automáticos en caso de fallos
+  - Manejo de rate limiting y delays
+  - Guardado de datos en formatos JSON y CSV
 
 ## Instalación
 
@@ -38,21 +38,24 @@ python get_tesis.py
 - Ejecutar el proceso completo:
 python main.py
 
-Estructura de Archivos
+## Estructura de Archivos
 
-main.py: Punto de entrada principal
-config.py: Manejo de configuración
-api_client.py: Cliente API con funciones de decodificación
-get_profesors.py: Scraper de académicos
-get_publicaciones.py: Scraper de publicaciones
-get_projects.py: Scraper de proyectos
-get_tesis.py: Scraper de tesis
-config.yaml: Archivo de configuración
+- main.py: Punto de entrada principal
+- config.py: Manejo de configuración
+- api_client.py: Cliente API con funciones de decodificación
+- get_profesors.py: Scraper de académicos
+- get_publicaciones.py: Scraper de publicaciones
+- get_projects.py: Scraper de proyectos
+- get_tesis.py: Scraper de tesis
+- config.yaml: Archivo de configuración
 
-Estructura de Datos
+## Estructura de Datos
 Los datos se guardan en la carpeta process_data en los siguientes archivos:
 
-academicos_raw.json: Información de académicos
-todas_las_publicaciones.csv: Publicaciones académicas
-todos_los_proyectos.csv: Proyectos de investigación
-todas_las_tesis.csv: Tesis dirigidas
+- academicos_raw.json: Información de académicos
+- todas_las_publicaciones.csv: Publicaciones académicas
+- todos_los_proyectos.csv: Proyectos de investigación
+- todas_las_tesis.csv: Tesis dirigidas
+
+## Licencia
+MIT License
