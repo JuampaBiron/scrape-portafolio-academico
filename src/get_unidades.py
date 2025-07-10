@@ -73,8 +73,13 @@ class UnidadesScraper:
 
                 if response.status_code == 200:
                     dic_unidades = self.api_client._decode_response(response.text)
-                    for elemento in dic_unidades:
-                        print(elemento['id']," ", elemento["nombre"])
+                    #for elemento in dic_unidades:
+                        #print(elemento['id']," ", elemento["nombre"])
+                    # Guardar la respuesta cruda en un archivo JSON
+                    raw_unidades_path = Path(self.config.paths['unidades_raw_data'])
+                    raw_unidades_path.mkdir(parents=True, exist_ok=True)
+                    with open(raw_unidades_path / 'unidades.json', 'w', encoding='utf-8') as file:
+                        json.dump(dic_unidades, file, ensure_ascii=False, indent=4)
                     return self.api_client._decode_response(response.text)
                 
                 logging.warning(
@@ -89,11 +94,7 @@ class UnidadesScraper:
                     time.sleep(self.config.scraping_config['delay'])  
         return {}
 
-    def run_workflow(self):
-        # Crear y ejecutar el scraper
-        self.get_unidades()       
-
 
 if __name__ == "__main__":
     scrapper = UnidadesScraper()
-    scrapper.run_workflow()
+    scrapper.get_unidades()
