@@ -1,11 +1,18 @@
 from enum import Enum, auto
 import logging
 from pathlib import Path
-from config import Config
-from get_profesors import ScraperAcademicos
-from get_publicaciones import PublicacionesScraper
-from get_projects import ProyectosScraper
-from get_unidades import UnidadesScraper
+import sys
+# Agregar el directorio raíz del proyecto al path de Python
+project_root = Path(__file__).parent
+sys.path.insert(0, str(project_root))
+
+# Ahora importar los módulos locales
+from src.config import Config
+from src.get_profesors import ScraperAcademicos
+from src.get_publicaciones import PublicacionesScraper
+from src.get_projects import ProyectosScraper
+from src.get_unidades import UnidadesScraper
+from src.bronze_loader import BronzeLoader
 
 class ScrapingState(Enum):
     """Estados del proceso de scraping"""
@@ -14,6 +21,7 @@ class ScrapingState(Enum):
     PROFESORES = auto()
     PUBLICACIONES = auto()
     PROYECTOS = auto()
+    BRONZE_LOADER = auto()
 
 
 class PortafolioScraper:
@@ -85,6 +93,12 @@ class PortafolioScraper:
         self.logger.info("******* Obteniendo proyectos *******")
         return self.project_scraper.run_workflow()
     
+    def _bronze_loader(self) -> bool:
+        """Carga los datos en la base de datos"""
+        self.logger.info("******* Cargando datos en la base de datos *******")
+        bronze_loader = BronzeLoader()
+        return bronze_loader.run_workflow()
+    
     def run(self) -> None:
         """Ejecuta el proceso completo de scraping"""
         import time
@@ -96,11 +110,12 @@ class PortafolioScraper:
         
         # Mapeo de estados a funciones
         state_processors = {
-            ScrapingState.INIT: self._init_process,
-            ScrapingState.UNIDADES: self._scrape_unidades,
-            ScrapingState.PROFESORES: self._scrape_profesores,
-            ScrapingState.PUBLICACIONES: self._scrape_publicaciones,
-            ScrapingState.PROYECTOS: self._scrape_proyectos,
+            #ScrapingState.INIT: self._init_process,
+            #ScrapingState.UNIDADES: self._scrape_unidades,
+            #ScrapingState.PROFESORES: self._scrape_profesores,
+            #ScrapingState.PUBLICACIONES: self._scrape_publicaciones,
+            #ScrapingState.PROYECTOS: self._scrape_proyectos,
+            ScrapingState.BRONZE_LOADER: self._bronze_loader,
         }
 
         total_states = len(ScrapingState)
