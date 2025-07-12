@@ -141,7 +141,7 @@ pagination:
 ### Archivos CSV (process_data/)
 - `todas_las_publicaciones.csv`: Consolidado de publicaciones
 - `todos_los_proyectos.csv`: Consolidado de proyectos
-- `todas_las_tesis.csv`: Consolidado de tesis dirigidas
+- `todas_las_tesis.csv`: Consolidado de tesis dirigidas (coming soon)
 
 ## Personalización
 
@@ -151,7 +151,7 @@ Edita `src/config.yaml` o modifica directamente `unidades.json` para procesar so
 ### Parámetros de búsqueda
 Los scrapers incluyen parámetros configurables:
 - **Proyectos**: Filtro por año desde 2015, resolución específica
-- **Tesis**: Solo tesis verificadas (id_estado_verif: 3)
+- **Tesis**: Solo tesis verificadas (id_estado_verif: 3) (coming soon)
 - **Publicaciones**: Sin filtros adicionales por defecto
 
 ## Monitoreo y Logs
@@ -170,14 +170,6 @@ El sistema proporciona logging detallado:
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abrir Pull Request
 
-## Próximas funcionalidades
-
-- [ ] Módulo de carga a base de datos
-- [ ] Dashboard de visualización
-- [ ] API REST para consultas
-- [ ] Exportación a diferentes formatos
-- [ ] Scraping incremental
-
 ## Consideraciones Éticas
 
 Este scraper está diseñado para:
@@ -189,11 +181,3 @@ Este scraper está diseñado para:
 ## Licencia
 
 MIT License - ver archivo `LICENSE` para detalles.
-
-## Soporte
-
-Para reportar bugs o solicitar features, crear un issue en el repositorio.
-
----
-
-**Desarrollado con ❤️ para la comunidad académica de la Universidad de Chile**
