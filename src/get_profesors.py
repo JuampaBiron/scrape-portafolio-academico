@@ -1,5 +1,6 @@
 import requests
 import json
+import os
 from typing import Dict, Any
 from pathlib import Path
 import logging
@@ -7,24 +8,16 @@ from api_client import APIClient
 from config import Config
 import time
 
-class AcademicosScraper:
+class ScraperAcademicos:
     def __init__(self):
         self.config = Config()
         self.logger = self._setup_logger()
         self.api_client = APIClient()
+        self.unidades_file = Path(self.config.paths['unidades_raw_data']) / "unidades.json"
 
     def _setup_logger(self) -> logging.Logger:
-        """Configura y retorna un logger"""
-        logger = logging.getLogger('academicos_scraper')
-        if not logger.handlers:
-            handler = logging.StreamHandler()
-            formatter = logging.Formatter(
-                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-            )
-            handler.setFormatter(formatter)
-            logger.addHandler(handler)
-            logger.setLevel(logging.INFO)
-        return logger
+        """Retorna el logger configurado"""
+        return logging.getLogger('academicos_scraper')
 
     def get_academicos(self, reparticion: int) -> Dict[str, Any]:
         """
@@ -36,8 +29,9 @@ class AcademicosScraper:
         Returns:
             Dict con los datos de los académicos o diccionario vacío si hay error
         """
+        self.logger.info(f"Buscando académicos para repartición: {reparticion}")
         url = f"{self.config.api_base_url}{self.config.endpoints['academicos']}"
-        
+        self.logger.info(f"URL de la API: {url}")
         params = {
             'reparticion': reparticion,
             'limite': self.config.pagination['max_limit'],
@@ -54,6 +48,7 @@ class AcademicosScraper:
                 )
 
                 if response.status_code == 200:
+                    self.logger.info(f"Datos obtenidos exitosamente para repartición {reparticion}")
                     return self.api_client._decode_response(response.text)
                 
                 self.logger.warning(
@@ -69,7 +64,7 @@ class AcademicosScraper:
                     
         return {}
 
-    def save_academicos(self, reparticion: int) -> bool:
+    def save_academicos(self, reparticion: int, out_path:str) -> bool:
         """
         Obtiene y guarda la lista de académicos en un archivo JSON
         
@@ -78,11 +73,7 @@ class AcademicosScraper:
             
         Returns:
             bool: True si el proceso fue exitoso, False en caso contrario
-        """
-        # Crear directorio si no existe
-        output_path = Path(self.config.paths['data_dir'])
-        output_path.mkdir(parents=True, exist_ok=True)
-        
+        """        
         # Obtener datos
         data = self.get_academicos(reparticion)
         
@@ -92,14 +83,14 @@ class AcademicosScraper:
             
         try:
             # Guardar datos
-            output_file = output_path / 'academicos_raw.json'
+            
             total_academicos = data.get('total_resultado', 0)
             
-            with open(output_file, 'w', encoding='utf-8') as f:
+            with open(out_path, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
                 
             self.logger.info(f"Total de académicos encontrados: {total_academicos}")
-            self.logger.info(f"Datos guardados en: {output_file}")
+            self.logger.info(f"Datos guardados en: {out_path}")
             
             return True
             
@@ -107,17 +98,51 @@ class AcademicosScraper:
             self.logger.error(f"Error guardando datos: {str(e)}")
             return False
 
-def main():
-    # Configuración inicial
-    reparticion = 788
-    
-    # Crear y ejecutar el scraper
-    scraper = AcademicosScraper()
-    success = scraper.save_academicos(reparticion)
-    
-    if not success:
-        logging.error("El proceso de obtención de académicos falló")
-        exit(1)
+    def run_workflow(self):
+        """
+        Ejecuta el flujo de trabajo para obtener y guardar académicos
+        """
+        self.logger.info(f"Leyendo unidades desde: {self.unidades_file}")
+        with open(self.unidades_file, 'r', encoding='utf-8') as file:
+            try:
+                unidades = json.load(file)
+            except json.JSONDecodeError as e:
+                self.logger.error(f"Error decodificando JSON: {str(e)}")
+                return False
+
+        for unidad in unidades:
+            unidad_id = unidad.get('id')
+            if not unidad_id:
+                self.logger.warning(f"Unidad sin ID: {unidad}")
+                continue
+            try:            
+                    # Crear archivo de salida
+                    department_academics_file = Path(self.config.paths['academics_raw_data']) / f"{unidad_id}_academicos_raw.json"
+                    if Path.exists(department_academics_file):
+                        self.logger.info(f"Archivo ya existe: {department_academics_file}, omitiendo...")
+                        continue
+                    
+                    # Obtener y guardar académicos
+                    success = self.save_academicos(reparticion=unidad_id, out_path=department_academics_file)
+                    
+                    if success:
+                        self.logger.info(f"✅ Académicos guardados para {unidad_id}")
+                    else:
+                        self.logger.error(f"❌ Error obteniendo académicos para {unidad_id}")
+
+            except Exception as e:
+                self.logger.error(f"Error leyendo archivo {self.unidades_file}: {str(e)}")
+                continue
+        
+        self.logger.info("Flujo de trabajo completado exitosamente")
+        return True
 
 if __name__ == "__main__":
-    main()
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[logging.StreamHandler()]
+    )
+    
+    scraper = ScraperAcademicos()
+    success = scraper.run_workflow()

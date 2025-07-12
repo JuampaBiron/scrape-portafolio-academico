@@ -42,6 +42,7 @@ ENV/
 *.log
 logs/
 raw_data/
+process_data/
 *.csv
 *.json
 *.xlsx

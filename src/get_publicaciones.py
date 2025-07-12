@@ -8,28 +8,27 @@ from config import Config
 import logging
 from api_client import APIClient
 
+
+
+
 class PublicacionesScraper:
+    """
+    Obtiene las publicaciones de los académicos de la lista de académicos descargadas desde get_professors.py para una unidad definida
+    """
     def __init__(self):
         self.config = Config()
-        self.logger = self._setup_logger()
         self.api_client = APIClient()
+        self.unidades_file = Path(self.config.paths['unidades_raw_data']) / "unidades.json"
+        self.logger = self._setup_logger()
 
     def _setup_logger(self) -> logging.Logger:
-        """Configura y retorna un logger"""
-        logger = logging.getLogger('publicaciones_scraper')
-        if not logger.handlers:
-            handler = logging.StreamHandler()
-            formatter = logging.Formatter(
-                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-            )
-            handler.setFormatter(formatter)
-            logger.addHandler(handler)
-            logger.setLevel(logging.INFO)
-        return logger
+        """Retorna el logger configurado"""
+        return logging.getLogger('publicaciones_scraper')
 
     def get_publicaciones(self, id_persona: int) -> List[Dict[str, Any]]:
-        """Obtiene las publicaciones de un académico"""
+        """Obtiene las publicaciones de un académico segun su ID"""
         url = f"{self.config.api_base_url}{self.config.endpoints['publicaciones']}"
+        raw_publications = Path(self.config.paths['publications_raw_data'])/f"{id_persona}_publications.json"
         
         params = {
             'id_persona': id_persona,
@@ -48,15 +47,12 @@ class PublicacionesScraper:
                 
                 if response.status_code == 200:
                     result = self.api_client._decode_response(response.text)
-                    
-                    # Guardar datos crudos si existe el directorio
-                    raw_data_path = Path(self.config.paths['raw_data'])
-                    if raw_data_path.exists():
-                        raw_file = raw_data_path / f'publicaciones_{id_persona}_raw.json'
-                        with open(raw_file, 'w', encoding='utf-8') as f:
-                            json.dump(result, f, indent=2, ensure_ascii=False)
-                    
+                    # Guardar la respuesta cruda en un archivo JSON
+                    raw_publications.parent.mkdir(parents=True, exist_ok=True)
+                    with open(raw_publications, 'w', encoding = 'utf-8') as file:
+                        json.dump(result, file, ensure_ascii=False, indent=4)
                     if 'academicos' in result and len(result['academicos']) > 0:
+                        
                         return result['academicos'][0].get('publicaciones', [])
                     return []
                 
@@ -73,88 +69,47 @@ class PublicacionesScraper:
                 
         return []
 
-    def get_all_ids(self) -> List[int]:
-        """Obtiene todos los IDs de académicos del archivo JSON"""
-        json_path = Path(self.config.paths['data_dir']) / "academicos_raw.json"
-        
+    def run_workflow(self):
+        """Ejecuta el flujo de trabajo para obtener publicaciones de todos los académicos"""
         try:
-            with open(json_path, 'r', encoding='utf-8') as archivo:
-                datos = json.load(archivo)
-                return [
-                    academico['id_persona'] 
-                    for academico in datos.get("academicos", [])[0:5]
-                    if academico.get("id_persona")
-                ]
-        except Exception as e:
-            self.logger.error(f"Error leyendo archivo de académicos: {str(e)}")
-            return []
 
-    def build_publicaciones_file(self) -> bool:
-        """Construye un archivo CSV con todas las publicaciones"""
-        try:
-            # Crear directorios necesarios
-            Path(self.config.paths['raw_data']).mkdir(exist_ok=True)
-            Path(self.config.paths['data_dir']).mkdir(exist_ok=True)
-            
-            # Obtener lista de IDs
-            id_list = self.get_all_ids()
-            total_ids = len(id_list)
-            self.logger.info(f"Procesando publicaciones para {total_ids} académicos...")
-            
-            output_file = Path(self.config.paths['data_dir']) / 'todas_las_publicaciones.csv'
-            
-            # Crear/abrir archivo CSV principal
-            with open(output_file, 'w', newline='', encoding='utf-8') as f:
-                writer = csv.writer(f)
-                writer.writerow([
-                    'ID Académico', 'Autores', 'Título', 'Año',
-                    'Revista', 'Tipo', 'Link', 'DOI'
-                ])
-                
-                # Procesar cada académico
-                total_publicaciones = 0
-                academicos_procesados = 0
-                
-                for i, id_academico in enumerate(id_list, 1):
-                    self.logger.info(f"Procesando académico {i}/{total_ids} (ID: {id_academico})")
-                    
-                    publicaciones = self.get_publicaciones(id_academico)
-                    # Consideramos exitoso el procesamiento incluso si no hay publicaciones
-                    academicos_procesados += 1
-                    
-                    # Escribir publicaciones en el CSV si existen
-                    for pub in publicaciones:
-                        writer.writerow([
-                            id_academico,
-                            pub.get('Autores', ''),
-                            pub.get('titulo_publicacion', ''),
-                            pub.get('ano', ''),
-                            pub.get('titulo_revistas', ''),
-                            pub.get('tipo_publicacion', ''),
-                            pub.get('link', ''),
-                            pub.get('doi', '')
-                        ])
-                        total_publicaciones += 1
-                    
-                    if i % self.config.scraping_config['batch_size'] == 0:
-                        self.logger.info(f"Progreso: {i}/{total_ids} académicos procesados")
-                        self.logger.info(f"Total de publicaciones hasta ahora: {total_publicaciones}")
-            
-            self.logger.info("\nProceso completado!")
-            self.logger.info(f"Total de académicos procesados: {academicos_procesados}/{total_ids}")
-            self.logger.info(f"Total de publicaciones recopiladas: {total_publicaciones}")
-            self.logger.info(f"Archivo guardado como: {output_file}")
-            
-            # Consideramos exitoso el proceso si se procesaron todos los académicos
-            return academicos_procesados == total_ids
-            
+            unidades = json.load(open(self.unidades_file, 'r', encoding='utf-8'))
+
+            for unidad in unidades:
+                unidad_id = unidad.get('id')
+                unidad_nombre = unidad.get('nombre')
+                self.logger.info(f"** Procesando unidad: {unidad_nombre} **")
+                profesores_file = Path(self.config.paths['academics_raw_data']) / f"{unidad_id}_academicos_raw.json"
+                if not Path.exists(profesores_file):
+                    self.logger.error(f"Archivo de académicos no encontrado para unidad {unidad_nombre} (ID: {unidad_id})")
+                    continue
+                profesores = json.load(open(profesores_file, 'r', encoding='utf-8')).get('academicos')
+                for profesor in profesores:
+                    id_persona = profesor.get('id_persona')
+                    nombre_completo = profesor.get('nombre_completo')
+                    publicaciones_file = Path(self.config.paths['publications_raw_data']) / f"{id_persona}_publications.json"
+                    self.logger.info(f"Obteniendo publicaciones para {nombre_completo} (ID: {id_persona})")
+                    if not Path.exists(publicaciones_file):
+                        publicaciones = self.get_publicaciones(id_persona)
+                        if publicaciones:
+                            self.logger.info(f"Se encontraron {len(publicaciones)} publicaciones para {nombre_completo}")
+                        else:
+                            self.logger.info(f"No se encontraron publicaciones para {nombre_completo}")
+                    else:
+                        self.logger.info(f"Archivo de publicaciones ya existe para {nombre_completo}, omitiendo...")
+        
+            self.logger.info("Flujo de trabajo completado exitosamente")
+            return True
         except Exception as e:
-            self.logger.error(f"Error crítico en el proceso de publicaciones: {str(e)}")
+            self.logger.error(f"Error en el flujo de trabajo: {str(e)}")
             return False
 
-def main():
-    scraper = PublicacionesScraper()
-    scraper.build_publicaciones_file()
-
 if __name__ == "__main__":
-    main()
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[logging.StreamHandler()]
+    )
+    
+    scraper = PublicacionesScraper()
+    scraper.run_workflow()

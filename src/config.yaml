@@ -4,6 +4,8 @@ api:
     academicos: "/academicos/lista/por_reparticion"
     publicaciones: "/academicos/publicaciones"
     proyectos: "/academicos/proyectos"
+    unidades: "/academicos/lista/unidades"
+    tesis: "/academicos/tesis"
   auth_token: "Basic ZGlyZWN0b3JpbzphY2FkZW1pY28="
   headers:
     Accept: "*/*"
@@ -12,15 +14,17 @@ api:
     User-Agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 
 scraping:
-  delay: 0.5  # segundos entre requests
+  delay: 0.2  # segundos entre requests
   max_retries: 2
   timeout: 30
   batch_size: 10
 
 paths:
-  data_dir: "process_data"
-  raw_data: "raw_data"
-  output_dir: "output"
+  unidades_raw_data: "raw_data/unidades"
+  departments_raw_data: "raw_data/departments"
+  academics_raw_data: "raw_data/academics"
+  publications_raw_data: "raw_data/publications"
+  projects_raw_data: "raw_data/projects"
 
 pagination:
   default_limit: 200
