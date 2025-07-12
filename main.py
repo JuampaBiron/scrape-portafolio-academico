@@ -2,7 +2,7 @@ from enum import Enum, auto
 import logging
 from pathlib import Path
 import sys
-# Agregar el directorio raíz del proyecto al path de Python
+# Agregar el directorio raíz del proyecto al path de Pythonh
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
