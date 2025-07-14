@@ -3,9 +3,14 @@ import json
 from typing import Dict, Any
 from pathlib import Path
 import logging
+import sys
+import time
+# Agregar el directorio raíz del proyecto al path de Python
+project_root = Path(__file__).parent
+sys.path.insert(0, str(project_root))
 from api_client import APIClient
 from config import Config
-import time
+
 # Configurar el logging al inicio del archivo
 logging.basicConfig(
     level=logging.INFO,

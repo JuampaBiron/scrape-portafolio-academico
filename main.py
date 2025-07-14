@@ -2,7 +2,7 @@ from enum import Enum, auto
 import logging
 from pathlib import Path
 import sys
-# Agregar el directorio raíz del proyecto al path de Pythonh
+# Agregar el directorio raíz del proyecto al path de Python
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
@@ -110,11 +110,11 @@ class PortafolioScraper:
         
         # Mapeo de estados a funciones
         state_processors = {
-            #ScrapingState.INIT: self._init_process,
-            #ScrapingState.UNIDADES: self._scrape_unidades,
-            #ScrapingState.PROFESORES: self._scrape_profesores,
-            #ScrapingState.PUBLICACIONES: self._scrape_publicaciones,
-            #ScrapingState.PROYECTOS: self._scrape_proyectos,
+            ScrapingState.INIT: self._init_process,
+            ScrapingState.UNIDADES: self._scrape_unidades,
+            ScrapingState.PROFESORES: self._scrape_profesores,
+            ScrapingState.PUBLICACIONES: self._scrape_publicaciones,
+            ScrapingState.PROYECTOS: self._scrape_proyectos,
             ScrapingState.BRONZE_LOADER: self._bronze_loader,
         }
 

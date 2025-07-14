@@ -2,12 +2,16 @@ import requests
 import json
 from typing import Dict, Any, List
 from pathlib import Path
-import csv
 import logging
 import time
-from config import Config
-from api_client import APIClient
+import sys
 from urllib.parse import urlencode
+project_root = Path(__file__).parent
+sys.path.insert(0, str(project_root))
+from api_client import APIClient
+from config import Config
+
+
 
 class ProyectosScraper:
     """

@@ -1,13 +1,14 @@
 import requests
 import json
-import csv
 from typing import Dict, Any, List
 from pathlib import Path
 import time
-from config import Config
 import logging
+import sys
+project_root = Path(__file__).parent
+sys.path.insert(0, str(project_root))
 from api_client import APIClient
-
+from config import Config
 
 
 

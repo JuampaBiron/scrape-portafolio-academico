@@ -1,12 +1,16 @@
 import requests
 import json
-import os
+import sys
 from typing import Dict, Any
 from pathlib import Path
 import logging
+import time
+# Agregar el directorio raíz del proyecto al path de Python
+project_root = Path(__file__).parent
+sys.path.insert(0, str(project_root))
 from api_client import APIClient
 from config import Config
-import time
+
 
 class ScraperAcademicos:
     def __init__(self):
